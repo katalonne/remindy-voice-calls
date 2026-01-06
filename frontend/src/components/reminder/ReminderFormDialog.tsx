@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useState, useEffect } from "react";
 import { PhoneInput } from "../ui/PhoneInput";
 import { timezones } from "../../constants/timezones";
@@ -123,30 +125,62 @@ export function ReminderFormDialog({ open, onClose, onSubmit, initial, quickCrea
           <DialogTitle>{customTitle || (initial ? "Edit Reminder" : "Create Reminder")}</DialogTitle>
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <Input placeholder="Title" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
-          {form.errors.title && <div className="text-red-500 text-xs">{form.errors.title}</div>}
-          <Input placeholder="Message" value={form.message} onChange={e => setForm(prev => ({ ...prev, message: e.target.value }))} />
-          {form.errors.message && <div className="text-red-500 text-xs">{form.errors.message}</div>}
-          <PhoneInput
-            value={form.phone}
-            onChange={(data: { phone: string }) => setForm(prev => ({ ...prev, phone: data.phone }))}
-          />
-          {form.errors.phone && <div className="text-red-500 text-xs">{form.errors.phone}</div>}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              placeholder="Reminder title"
+              value={form.title}
+              onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
+            />
+            {form.errors.title && <div className="text-destructive text-xs">{form.errors.title}</div>}
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="message">Message</Label>
+            <Input
+              id="message"
+              placeholder="Reminder message"
+              value={form.message}
+              onChange={e => setForm(prev => ({ ...prev, message: e.target.value }))}
+            />
+            {form.errors.message && <div className="text-destructive text-xs">{form.errors.message}</div>}
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <PhoneInput
+              id="phone"
+              value={form.phone}
+              onChange={(data: { phone: string }) => setForm(prev => ({ ...prev, phone: data.phone }))}
+            />
+            {form.errors.phone && <div className="text-destructive text-xs">{form.errors.phone}</div>}
+          </div>
 
           {!quickCreate && (
             <>
-              <Input type="datetime-local" value={form.datetime} onChange={e => setForm(prev => ({ ...prev, datetime: e.target.value }))} />
-              {form.errors.datetime && <div className="text-red-500 text-xs">{form.errors.datetime}</div>}
-              <select
-                className="border rounded-md px-3 py-2 text-base focus-visible:border-ring focus-visible:ring-ring/50 w-full"
-                value={form.timezone}
-                onChange={e => setForm(prev => ({ ...prev, timezone: e.target.value }))}
-              >
-                {timezones.map(tz => (
-                  <option key={tz.tz} value={tz.tz}>{tz.label}</option>
-                ))}
-              </select>
-              {form.errors.timezone && <div className="text-red-500 text-xs">{form.errors.timezone}</div>}
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="datetime">Date & Time</Label>
+                <Input
+                  id="datetime"
+                  type="datetime-local"
+                  value={form.datetime}
+                  onChange={e => setForm(prev => ({ ...prev, datetime: e.target.value }))}
+                />
+                {form.errors.datetime && <div className="text-destructive text-xs">{form.errors.datetime}</div>}
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="timezone">Timezone</Label>
+                <Select value={form.timezone} onValueChange={(value) => setForm(prev => ({ ...prev, timezone: value }))}>
+                  <SelectTrigger id="timezone" className="w-full">
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent className="w-full">
+                    {timezones.map(tz => (
+                      <SelectItem key={tz.tz} value={tz.tz}>{tz.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.errors.timezone && <div className="text-destructive text-xs">{form.errors.timezone}</div>}
+              </div>
             </>
           )}
 

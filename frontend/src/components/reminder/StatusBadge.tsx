@@ -1,15 +1,15 @@
 import { Badge } from "../ui/badge";
 import { ReminderStatus } from "../../types/reminder";
 
-const statusMap: Record<ReminderStatus, { label: string; color: string }> = {
-  scheduled: { label: "Scheduled", color: "bg-blue-500" },
-  completed: { label: "Completed", color: "bg-green-500" },
-  failed: { label: "Failed", color: "bg-red-500" },
+const statusMap: Record<ReminderStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+  scheduled: { label: "Scheduled", variant: "default" },
+  completed: { label: "Completed", variant: "secondary" },
+  failed: { label: "Failed", variant: "destructive" },
 };
 
 export function ReminderStatusBadge({ status }: { status: ReminderStatus }) {
-  const { label, color } = statusMap[status];
+  const { label, variant } = statusMap[status];
   return (
-    <Badge className={`${color} text-white`}>{label}</Badge>
+    <Badge variant={variant}>{label}</Badge>
   );
 }

@@ -125,12 +125,7 @@
   --space-sm: 1rem;
   --space-md: 2rem;
   --space-lg: 4rem;
-  --font-base: 'Inter', sans-serif;
   --radius: 0.5rem;
-}
-
-body {
-  font-family: var(--font-base);
 }
 
 @layer base {

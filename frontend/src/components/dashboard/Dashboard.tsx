@@ -94,14 +94,18 @@ export function Dashboard() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">Reminders Dashboard</h1>
-          {totalItems > 0 && (
-            <p className="text-sm text-gray-600 mt-1">Total reminders: {totalItems}</p>
-          )}
-        </div>
+    <section className="relative bg-background py-20">
+      {/* Subtle gradient transition from hero */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+
+      <div className="relative z-10 max-w-3xl mx-auto px-4">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">Reminders Dashboard</h2>
+            {totalItems > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">Total reminders: {totalItems}</p>
+            )}
+          </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowQuickCreateDialog(true)}>
             Quick Create (1 min)
@@ -115,9 +119,9 @@ export function Dashboard() {
       />
       <div className="mt-6 grid gap-4">
         {isLoading ? (
-          <div className="text-center text-gray-500">Loading reminders...</div>
+          <div className="text-center text-muted-foreground">Loading reminders...</div>
         ) : error ? (
-          <div className="text-center text-red-500">{error instanceof Error ? error.message : "Failed to load reminders"}</div>
+          <div className="text-center text-destructive">{error instanceof Error ? error.message : "Failed to load reminders"}</div>
         ) : reminders.length === 0 ? (
           <EmptyReminders filter={filter} />
         ) : (
@@ -129,7 +133,7 @@ export function Dashboard() {
       {totalItems > 0 && (
         <div className="mt-8 border-t pt-6">
           <div className="flex flex-col gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               Showing {reminders.length === 0 ? 0 : (currentPage - 1) * PER_PAGE + 1} to {Math.min(currentPage * PER_PAGE, totalItems)} of {totalItems} reminders
             </div>
             {totalPages > 1 && (
@@ -190,13 +194,14 @@ export function Dashboard() {
         initial={editingReminder}
         title="Edit Reminder"
       />
-      <DeleteReminderDialog
-        open={showDeleteDialog}
-        onClose={() => { setShowDeleteDialog(false); setDeletingReminder(null); }}
-        onConfirm={handleDeleteConfirm}
-        reminder={deletingReminder}
-        isDeleting={deleteMutation.isPending}
-      />
-    </div>
+        <DeleteReminderDialog
+          open={showDeleteDialog}
+          onClose={() => { setShowDeleteDialog(false); setDeletingReminder(null); }}
+          onConfirm={handleDeleteConfirm}
+          reminder={deletingReminder}
+          isDeleting={deleteMutation.isPending}
+        />
+      </div>
+    </section>
   );
 }

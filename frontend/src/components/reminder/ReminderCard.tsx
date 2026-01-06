@@ -1,7 +1,8 @@
 import { Card } from "../ui/card";
 import { Reminder } from "../../types/reminder";
 import { ReminderStatusBadge } from "./StatusBadge";
-import { formatDistanceToNow, format } from "date-fns";
+import { CountdownTimer } from "./CountdownTimer";
+import { format } from "date-fns";
 import { Edit2, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -45,9 +46,18 @@ export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) 
           <ReminderStatusBadge status={reminder.status} />
         </div>
       </div>
-      <div className="text-gray-500 text-sm">{format(scheduledDate, "PPpp")}</div>
-      <div className="text-gray-500 text-sm">{reminder.phone_number}</div>
-      <div className="text-xs text-blue-600">{formatDistanceToNow(scheduledDate, { addSuffix: true })}</div>
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col gap-1">
+          <div className="text-muted-foreground text-sm">{format(scheduledDate, "PPpp")}</div>
+          <div className="text-muted-foreground text-sm">{reminder.phone_number}</div>
+        </div>
+        {isScheduled && (
+          <CountdownTimer
+            scheduledTime={reminder.scheduled_time}
+            initialSecondsRemaining={reminder.time_remaining_seconds}
+          />
+        )}
+      </div>
     </Card>
   );
 }
