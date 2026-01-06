@@ -1,6 +1,6 @@
 <h2 align="center">Reminder Voice Calls</h2>
 
-* Clonse the repo first: `git clone https://github.com/katalonne/flow-task`
+* Clonse the repo first: `git clone https://github.com/katalonne/remindy-voice-calls`
 
 # Requirements (without Docker)
 - Docker

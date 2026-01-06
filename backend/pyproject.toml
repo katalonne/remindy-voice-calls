@@ -22,4 +22,4 @@ dependencies = [
 name = "reminder-backend"
 version = "0.1.0"
 description = "Reminder scheduler and caller"
-authors = ["Roo <roo@example.com>"]
+authors = ["Catalin <Catalin@example.com>"]
