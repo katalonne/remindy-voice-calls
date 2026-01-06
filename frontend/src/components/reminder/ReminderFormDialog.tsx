@@ -43,9 +43,10 @@ function findMatchingTimezone(tz: string): string {
   return matchingTz?.tz || "Europe/London";
 }
 
-function formatDatetimeForTimezone(date: Date, timezone: string): string {
-  // Format date directly in the target timezone (returns "yyyy-MM-ddTHH:mm" format)
-  return format(date, "yyyy-MM-dd'T'HH:mm", { timeZone: timezone });
+function formatDatetimeForTimezone(date: Date, timezone: string, includeSeconds: boolean = false): string {
+  // Format date directly in the target timezone (returns "yyyy-MM-ddTHH:mm" or "yyyy-MM-ddTHH:mm:ss" format)
+  const formatStr = includeSeconds ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd'T'HH:mm";
+  return format(date, formatStr, { timeZone: timezone });
 }
 
 function getInitialFormState(initial: any, quickCreate: boolean): FormState {
@@ -93,7 +94,7 @@ export function ReminderFormDialog({ open, onClose, onSubmit, initial, quickCrea
   function getQuickCreateDatetime(timezone: string): string {
     const now = new Date();
     const oneMinuteLater = new Date(now.getTime() + 60000);
-    return formatDatetimeForTimezone(oneMinuteLater, timezone);
+    return formatDatetimeForTimezone(oneMinuteLater, timezone, true);
   }
 
   function validate() {
@@ -115,7 +116,9 @@ export function ReminderFormDialog({ open, onClose, onSubmit, initial, quickCrea
     if (!validate()) return;
     // For quickCreate, always use fresh datetime (1 min from now) at submit time
     const datetime = quickCreate ? getQuickCreateDatetime(form.timezone) : form.datetime;
-    onSubmit({ title: form.title, message: form.message, phone: form.phone, datetime, timezone: form.timezone });
+    const data = { title: form.title, message: form.message, phone: form.phone, datetime, timezone: form.timezone };
+    console.log("Creating reminder with data:", data);
+    onSubmit(data);
   }
 
   return (

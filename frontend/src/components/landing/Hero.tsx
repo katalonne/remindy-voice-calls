@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Bell, Clock, Phone, ArrowRight, Sparkles } from "lucide-react";
+import { Bell, Clock, Phone, ArrowRight, Sparks } from "iconoir-react";
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -21,7 +21,7 @@ export function Hero({ onGetStarted }: HeroProps) {
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Sparks className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">AI-Powered Phone Reminders</span>
           </div>
 

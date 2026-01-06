@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../ui/button";
 import { ReminderCard } from "../reminder/ReminderCard";
@@ -10,7 +10,7 @@ import { DeleteReminderDialog } from "../reminder/DeleteReminderDialog";
 import { ReminderFilterTabs } from "./ReminderFilterTabs";
 import { Reminder } from "../../types/reminder";
 import { fetchReminders, createReminder, deleteReminder } from "../../lib/api";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 
 type FilterType = "all" | "scheduled" | "completed" | "failed";
 
@@ -18,6 +18,7 @@ const PER_PAGE = 25;
 
 export function Dashboard() {
   const queryClient = useQueryClient();
+  const remindersContainerRef = useRef<HTMLDivElement>(null);
 
   // UI State
   const [filter, setFilter] = useState<FilterType>("all");
@@ -29,10 +30,18 @@ export function Dashboard() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingReminder, setDeletingReminder] = useState<Reminder | null>(null);
 
-  // Query for fetching reminders
+  // Scroll to top when filter changes
+  useEffect(() => {
+    if (remindersContainerRef.current) {
+      remindersContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [filter]);
+
+  // Query for fetching reminders with 15-second polling
   const { data, isLoading, error } = useQuery({
     queryKey: ["reminders", filter, currentPage, PER_PAGE],
     queryFn: () => fetchReminders(filter, currentPage, PER_PAGE),
+    refetchInterval: 15000, // Poll every 15 seconds
   });
 
   // Mutation for creating reminders
@@ -117,7 +126,7 @@ export function Dashboard() {
         value={filter}
         onChange={handleFilterChange}
       />
-      <div className="mt-6 grid gap-4">
+      <div ref={remindersContainerRef} className="mt-6 grid gap-4">
         {isLoading ? (
           <div className="text-center text-muted-foreground">Loading reminders...</div>
         ) : error ? (
@@ -144,7 +153,7 @@ export function Dashboard() {
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || isLoading}
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <NavArrowLeft width={16} height={16} />
                   Previous
                 </Button>
                 <div className="flex items-center gap-1">
@@ -167,7 +176,7 @@ export function Dashboard() {
                   disabled={currentPage === totalPages || isLoading}
                 >
                   Next
-                  <ChevronRight className="w-4 h-4" />
+                  <NavArrowRight width={16} height={16} />
                 </Button>
               </div>
             )}

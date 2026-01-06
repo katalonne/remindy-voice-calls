@@ -3,7 +3,7 @@ import { Reminder } from "../../types/reminder";
 import { ReminderStatusBadge } from "./StatusBadge";
 import { CountdownTimer } from "./CountdownTimer";
 import { format } from "date-fns";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit, Trash } from "iconoir-react";
 import { Button } from "../ui/button";
 
 interface ReminderCardProps {
@@ -29,7 +29,7 @@ export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) 
               className="h-8 w-8 p-0"
               title="Edit reminder"
             >
-              <Edit2 className="w-4 h-4" />
+              <Edit width={16} height={16} />
             </Button>
           )}
           {onDelete && (
@@ -40,7 +40,7 @@ export function ReminderCard({ reminder, onEdit, onDelete }: ReminderCardProps) 
               className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
               title="Delete reminder"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash width={16} height={16} />
             </Button>
           )}
           <ReminderStatusBadge status={reminder.status} />
