@@ -7,12 +7,13 @@ import { ReminderCard } from "../reminder/ReminderCard";
 import { EmptyReminders } from "../ui/empty-states/EmptyReminders";
 import { ReminderFormDialog } from "../reminder/ReminderFormDialog";
 import { DeleteReminderDialog } from "../reminder/DeleteReminderDialog";
-import { ReminderFilterTabs } from "./ReminderFilterTabs";
+import { ReminderFilterSort } from "./ReminderFilterTabs";
 import { Reminder } from "../../types/reminder";
 import { fetchReminders, createReminder, deleteReminder } from "../../lib/api";
 import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 
 type FilterType = "all" | "scheduled" | "completed" | "failed";
+type SortType = "ascending" | "descending" | "-";
 
 const PER_PAGE = 25;
 
@@ -22,6 +23,7 @@ export function Dashboard() {
 
   // UI State
   const [filter, setFilter] = useState<FilterType>("all");
+  const [sort, setSort] = useState<SortType>("-");
   const [currentPage, setCurrentPage] = useState(1);
   const [showDialog, setShowDialog] = useState(false);
   const [showQuickCreateDialog, setShowQuickCreateDialog] = useState(false);
@@ -39,8 +41,8 @@ export function Dashboard() {
 
   // Query for fetching reminders with 15-second polling
   const { data, isLoading, error } = useQuery({
-    queryKey: ["reminders", filter, currentPage, PER_PAGE],
-    queryFn: () => fetchReminders(filter, currentPage, PER_PAGE),
+    queryKey: ["reminders", filter, sort, currentPage, PER_PAGE],
+    queryFn: () => fetchReminders(filter, currentPage, PER_PAGE, sort === "-" ? undefined : sort),
     refetchInterval: 15000, // Poll every 15 seconds
   });
 
@@ -122,9 +124,11 @@ export function Dashboard() {
           <Button onClick={() => setShowDialog(true)}>Create Reminder</Button>
         </div>
       </div>
-      <ReminderFilterTabs
+      <ReminderFilterSort
         value={filter}
         onChange={handleFilterChange}
+        sort={sort}
+        onSortChange={(v: string) => setSort(v as SortType)}
       />
       <div ref={remindersContainerRef} className="mt-6 grid gap-4">
         {isLoading ? (

@@ -19,14 +19,21 @@ export interface RemindersResponse {
 export async function fetchReminders(
   status: "all" | "scheduled" | "completed" | "failed" = "all",
   page: number = 1,
-  perPage: number = 25
+  perPage: number = 25,
+  sort?: "ascending" | "descending" | "-"
 ): Promise<RemindersResponse> {
+  const params: any = {
+    status,
+    page,
+    per_page: perPage,
+  };
+
+  if (sort && sort !== "-") {
+    params.sort = sort;
+  }
+
   const { data } = await api.get<RemindersResponse>("/reminders/", {
-    params: {
-      status,
-      page,
-      per_page: perPage,
-    },
+    params,
   });
   return data;
 }
