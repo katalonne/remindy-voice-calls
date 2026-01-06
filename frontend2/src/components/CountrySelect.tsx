@@ -16,14 +16,18 @@ export function CountrySelect({ value, onChange, className }: CountrySelectProps
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-          setOpen(false);
-        }
+      const target = event.target as Node;
+      const isClickInsideButton = buttonRef.current && buttonRef.current.contains(target);
+      const isClickInsideDropdown = dropdownRef.current && dropdownRef.current.contains(target);
+      const isClickInsidePortal = portalRef.current && portalRef.current.contains(target);
+
+      if (!isClickInsideButton && !isClickInsideDropdown && !isClickInsidePortal) {
+        setOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -82,6 +86,7 @@ export function CountrySelect({ value, onChange, className }: CountrySelectProps
 
       {open && createPortal(
         <div
+          ref={portalRef}
           className="fixed z-50 max-h-[300px] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
           style={{
             top: `${position.top}px`,
