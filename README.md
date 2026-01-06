@@ -24,6 +24,18 @@
 7) The app will be available at `http://localhost:3000`
 8) The API docs will be available at `http://localhost:8000/docs`
 
+# How scheduling works (what triggers reminders)
+1) A scheduler runs every minute (configurable via env `SCHEDULER_INTERVAL_SECONDS`). `10` seconds for dev.
+2) The scheduler queries the database for reminders that are due (scheduled_time_utc <= now_utc) and have not failed (retry_count < MAX_RETRY_ATTEMPTS).
+3) For each reminder, it makes a call via Vapi.ai.
+
+# How to test the call workflow quickly
+1) Run the app as described above. 
+2) Go to `http://localhost:3000/`
+3) Click "Quick Create" and fill in the form. 
+4) The reminder will be scheduled to call you in maximum 1 minute. 
+5) You can check the status of the reminder in the "Scheduled" tab. 
+
 # How to run tests
 1) Run `npm install` from the `frontend` directory.
 2) Run `npm run e2e` from the `frontend` directory for the **end to end tests**.
