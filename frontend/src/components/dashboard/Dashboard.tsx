@@ -15,44 +15,64 @@ import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 type FilterType = "all" | "scheduled" | "completed" | "failed";
 type SortType = "ascending" | "descending" | "-";
 
+interface DashboardState {
+  filter: FilterType;
+  sort: SortType;
+  currentPage: number;
+  showDialog: boolean;
+  showQuickCreateDialog: boolean;
+  showEditDialog: boolean;
+  editingReminder: Reminder | null;
+  showDeleteDialog: boolean;
+  deletingReminder: Reminder | null;
+}
+
+const INITIAL_STATE: DashboardState = {
+  filter: "all",
+  sort: "-",
+  currentPage: 1,
+  showDialog: false,
+  showQuickCreateDialog: false,
+  showEditDialog: false,
+  editingReminder: null,
+  showDeleteDialog: false,
+  deletingReminder: null,
+};
+
 const PER_PAGE = 25;
 
 export function Dashboard() {
   const queryClient = useQueryClient();
   const remindersContainerRef = useRef<HTMLDivElement>(null);
 
-  // UI State
-  const [filter, setFilter] = useState<FilterType>("all");
-  const [sort, setSort] = useState<SortType>("-");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showDialog, setShowDialog] = useState(false);
-  const [showQuickCreateDialog, setShowQuickCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deletingReminder, setDeletingReminder] = useState<Reminder | null>(null);
+  // Unified UI State
+  const [state, setState] = useState<DashboardState>(INITIAL_STATE);
 
-  // Scroll to top when filter changes
+  // Reset page when filter or sort changes
   useEffect(() => {
-    if (remindersContainerRef.current) {
-      remindersContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [filter]);
+    setState(prev => ({ ...prev, currentPage: 1 }));
+  }, [state.filter, state.sort]);
 
   // Query for fetching reminders with 15-second polling
   const { data, isLoading, error } = useQuery({
-    queryKey: ["reminders", filter, sort, currentPage, PER_PAGE],
-    queryFn: () => fetchReminders(filter, currentPage, PER_PAGE, sort === "-" ? undefined : sort),
+    queryKey: ["reminders", state.filter, state.sort, state.currentPage, PER_PAGE],
+    queryFn: () => fetchReminders(state.filter, state.currentPage, PER_PAGE, state.sort === "-" ? undefined : state.sort),
     refetchInterval: 15000, // Poll every 15 seconds
   });
+
+  // Scroll to top when data finishes loading (not during loading state)
+  useEffect(() => {
+    if (!isLoading && remindersContainerRef.current) {
+      remindersContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [isLoading]);
 
   // Mutation for creating reminders
   const createMutation = useMutation({
     mutationFn: createReminder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders"] });
-      setShowDialog(false);
-      setShowQuickCreateDialog(false);
+      setState(prev => ({ ...prev, showDialog: false, showQuickCreateDialog: false }));
     },
   });
 
@@ -64,8 +84,7 @@ export function Dashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders"] });
-      setShowEditDialog(false);
-      setEditingReminder(null);
+      setState(prev => ({ ...prev, showEditDialog: false, editingReminder: null }));
     },
   });
 
@@ -74,8 +93,7 @@ export function Dashboard() {
     mutationFn: (id: string) => deleteReminder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders"] });
-      setShowDeleteDialog(false);
-      setDeletingReminder(null);
+      setState(prev => ({ ...prev, showDeleteDialog: false, deletingReminder: null }));
     },
   });
 
@@ -84,23 +102,24 @@ export function Dashboard() {
   const totalPages = Math.ceil(totalItems / PER_PAGE);
 
   function handleFilterChange(newFilter: string) {
-    setFilter(newFilter as FilterType);
-    setCurrentPage(1);
+    setState(prev => ({ ...prev, filter: newFilter as FilterType }));
+  }
+
+  function handleSortChange(newSort: string) {
+    setState(prev => ({ ...prev, sort: newSort as SortType }));
   }
 
   function handleEditClick(reminder: Reminder) {
-    setEditingReminder(reminder);
-    setShowEditDialog(true);
+    setState(prev => ({ ...prev, editingReminder: reminder, showEditDialog: true }));
   }
 
   function handleDeleteClick(reminder: Reminder) {
-    setDeletingReminder(reminder);
-    setShowDeleteDialog(true);
+    setState(prev => ({ ...prev, deletingReminder: reminder, showDeleteDialog: true }));
   }
 
   function handleDeleteConfirm() {
-    if (deletingReminder) {
-      deleteMutation.mutate(deletingReminder.id);
+    if (state.deletingReminder) {
+      deleteMutation.mutate(state.deletingReminder.id);
     }
   }
 
@@ -118,17 +137,17 @@ export function Dashboard() {
             )}
           </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowQuickCreateDialog(true)}>
+          <Button variant="outline" onClick={() => setState(prev => ({ ...prev, showQuickCreateDialog: true }))}>
             Quick Create (1 min)
           </Button>
-          <Button onClick={() => setShowDialog(true)}>Create Reminder</Button>
+          <Button onClick={() => setState(prev => ({ ...prev, showDialog: true }))}>Create Reminder</Button>
         </div>
       </div>
       <ReminderFilterSort
-        value={filter}
+        value={state.filter}
         onChange={handleFilterChange}
-        sort={sort}
-        onSortChange={(v: string) => setSort(v as SortType)}
+        sort={state.sort}
+        onSortChange={handleSortChange}
       />
       <div ref={remindersContainerRef} className="mt-6 grid gap-4">
         {isLoading ? (
@@ -136,7 +155,7 @@ export function Dashboard() {
         ) : error ? (
           <div className="text-center text-destructive">{error instanceof Error ? error.message : "Failed to load reminders"}</div>
         ) : reminders.length === 0 ? (
-          <EmptyReminders filter={filter} />
+          <EmptyReminders filter={state.filter} />
         ) : (
           reminders.map((r: Reminder) => <ReminderCard key={r.id} reminder={r} onEdit={handleEditClick} onDelete={handleDeleteClick} />)
         )}
@@ -147,15 +166,15 @@ export function Dashboard() {
         <div className="mt-8 border-t pt-6">
           <div className="flex flex-col gap-4">
             <div className="text-sm text-muted-foreground">
-              Showing {reminders.length === 0 ? 0 : (currentPage - 1) * PER_PAGE + 1} to {Math.min(currentPage * PER_PAGE, totalItems)} of {totalItems} reminders
+              Showing {reminders.length === 0 ? 0 : (state.currentPage - 1) * PER_PAGE + 1} to {Math.min(state.currentPage * PER_PAGE, totalItems)} of {totalItems} reminders
             </div>
             {totalPages > 1 && (
               <div className="flex gap-2 flex-wrap">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1 || isLoading}
+                  onClick={() => setState(prev => ({ ...prev, currentPage: Math.max(1, prev.currentPage - 1) }))}
+                  disabled={state.currentPage === 1 || isLoading}
                 >
                   <NavArrowLeft width={16} height={16} />
                   Previous
@@ -164,9 +183,9 @@ export function Dashboard() {
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                     <Button
                       key={page}
-                      variant={page === currentPage ? "default" : "outline"}
+                      variant={page === state.currentPage ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => setState(prev => ({ ...prev, currentPage: page }))}
                       disabled={isLoading}
                     >
                       {page}
@@ -176,8 +195,8 @@ export function Dashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages || isLoading}
+                  onClick={() => setState(prev => ({ ...prev, currentPage: Math.min(totalPages, prev.currentPage + 1) }))}
+                  disabled={state.currentPage === totalPages || isLoading}
                 >
                   Next
                   <NavArrowRight width={16} height={16} />
@@ -189,29 +208,29 @@ export function Dashboard() {
       )}
 
       <ReminderFormDialog
-        open={showDialog}
-        onClose={() => setShowDialog(false)}
+        open={state.showDialog}
+        onClose={() => setState(prev => ({ ...prev, showDialog: false }))}
         onSubmit={(data) => createMutation.mutate(data)}
       />
       <ReminderFormDialog
-        open={showQuickCreateDialog}
-        onClose={() => setShowQuickCreateDialog(false)}
+        open={state.showQuickCreateDialog}
+        onClose={() => setState(prev => ({ ...prev, showQuickCreateDialog: false }))}
         onSubmit={(data) => createMutation.mutate(data)}
         quickCreate={true}
         title="Quick Create Reminder (1 minute)"
       />
       <ReminderFormDialog
-        open={showEditDialog}
-        onClose={() => { setShowEditDialog(false); setEditingReminder(null); }}
+        open={state.showEditDialog}
+        onClose={() => setState(prev => ({ ...prev, showEditDialog: false, editingReminder: null }))}
         onSubmit={(data) => editMutation.mutate(data)}
-        initial={editingReminder}
+        initial={state.editingReminder}
         title="Edit Reminder"
       />
         <DeleteReminderDialog
-          open={showDeleteDialog}
-          onClose={() => { setShowDeleteDialog(false); setDeletingReminder(null); }}
+          open={state.showDeleteDialog}
+          onClose={() => setState(prev => ({ ...prev, showDeleteDialog: false, deletingReminder: null }))}
           onConfirm={handleDeleteConfirm}
-          reminder={deletingReminder}
+          reminder={state.deletingReminder}
           isDeleting={deleteMutation.isPending}
         />
       </div>

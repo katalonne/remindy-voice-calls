@@ -40,9 +40,9 @@ export function ReminderFilterSort({
           ))}
         </TabsList>
       </Tabs>
-      <Select value={sort} onValueChange={onSortChange}>
+      <Select value={sort || "-"} onValueChange={onSortChange}>
         <SelectTrigger className="w-40">
-          <SelectValue placeholder="Sort by..." />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {sortOptions.map(option => (
